@@ -51,6 +51,20 @@ Today TStudio records notes, not audio. These are the biggest gaps compared to F
 - [ ] **Mixer track groups and colours** 🟢. ([#20](https://github.com/luckyz-z/TStudio/issues/20))
 - [ ] **Project templates** 🟢 🧩. File > New from template, with a few starter templates (trap, lofi, house). ([#21](https://github.com/luckyz-z/TStudio/issues/21))
 
+### 🎨 Themes and colours
+
+FL Studio lets you tint the whole UI and colour your channels and patterns. TStudio should go further, with shareable theme files, live sliders, and themes that Lua extensions and plugins can follow. Tracked in [#40](https://github.com/luckyz-z/TStudio/issues/40). Start with the theme engine.
+
+- [ ] **Theme engine** 🟡. Turn the 30 colours in `Source/UI/Theme.h` into a runtime palette that can be loaded from JSON, and move the hardcoded colours in other files into it. Everything else in this section builds on it. ([#50](https://github.com/luckyz-z/TStudio/issues/50))
+- [ ] **Hue, saturation and brightness sliders** 🟢. FL-style sliders in Options > Theme that shift the whole palette live, plus a reset button. Needs theme engine. ([#51](https://github.com/luckyz-z/TStudio/issues/51))
+- [ ] **Accent colour picker** 🟢. Swap tomato red for any colour. Reuse `ui::pickColour`. Needs theme engine. ([#52](https://github.com/luckyz-z/TStudio/issues/52))
+- [ ] **Theme files and a theme menu** 🟢. Read themes from `Documents/TStudio/Themes/*.json`, list them in Options > Theme, and remember the choice. Needs theme engine. ([#53](https://github.com/luckyz-z/TStudio/issues/53))
+- [ ] **Bundled themes** 🟢 🧩. Ship a few themes: Tomato Dark (the default), Light, High contrast, Midnight and Classic Grey. Needs theme files and a theme menu. ([#54](https://github.com/luckyz-z/TStudio/issues/54))
+- [ ] **Workspace background image** 🟢. A wallpaper behind the windows, with adjustable dim and blur, like FL's background setting. Needs theme engine. ([#55](https://github.com/luckyz-z/TStudio/issues/55))
+- [ ] **Colour groups and gradients** 🟢. Colour several channels, patterns or mixer tracks at once, with an optional gradient, like FL's colour selected / gradient tools. ([#56](https://github.com/luckyz-z/TStudio/issues/56))
+- [ ] **Share themes in TStudio-Plugins** 🟢 🧩. Add a `theme` kind to `plugins.json` and its validator so people can share and sell themes. Needs theme files and a theme menu. ([#57](https://github.com/luckyz-z/TStudio/issues/57))
+- [ ] **Lua theme API** 🟢. `ts.theme()` for extensions and `theme` colours for Lua plugin UIs, so community panels match the active theme. Needs theme engine. ([#58](https://github.com/luckyz-z/TStudio/issues/58))
+
 ---
 
 ## Later
@@ -87,7 +101,6 @@ Today TStudio records notes, not audio. These are the biggest gaps compared to F
 
 ### 🎨 Look and feel
 
-- [ ] **Themes** 🟡. Load colours from a JSON file in `Documents/TStudio/Themes/`, with a light theme and a high-contrast theme. ([#40](https://github.com/luckyz-z/TStudio/issues/40))
 - [ ] **Translations** 🟡 🧩. Route UI strings through JUCE's `LocalisedStrings`, then crowdsource languages. ([#41](https://github.com/luckyz-z/TStudio/issues/41))
 - [ ] **Accessibility** 🟡. Screen-reader names on controls and full keyboard navigation in every window. ([#42](https://github.com/luckyz-z/TStudio/issues/42))
 - [ ] **Touch and pen input** 🟡 for tablets and touchscreen laptops. ([#43](https://github.com/luckyz-z/TStudio/issues/43))

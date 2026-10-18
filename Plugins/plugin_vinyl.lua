@@ -35,9 +35,11 @@ for i = 0, size - 1 do bufferL[i], bufferR[i] = 0, 0 end
 local write, wowPhase, flutterPhase = 0, 0, 0
 local lowL, lowR, coef, pop, angle = 0, 0, 0.5, 0, 0
 local popLevel = 0
+local quiet, hold, fade = math.huge, 44100, 22050
 
 function block(frames)
   coef = 1 - exp(-TWO_PI * (16000 - params.tone * 13000) / sample_rate)
+  hold, fade = sample_rate, sample_rate * 0.5
   angle = (angle + frames / sample_rate * 0.55 * TWO_PI) % TWO_PI
   meters.angle = angle
   meters.pop = popLevel
@@ -68,7 +70,9 @@ function process(l, r)
     pop = (random() - 0.5) * params.crackle * 0.6
     if pop * pop > popLevel then popLevel = pop * pop * 4 end
   end
-  noise = pop + (random() - 0.5) * params.crackle * 0.004
+  if l * l + r * r > 1e-7 then quiet = 0 else quiet = quiet + 1 end
+  local presence = quiet < hold and 1 or math.max(0, 1 - (quiet - hold) / fade)
+  noise = (pop + (random() - 0.5) * params.crackle * 0.004) * presence
   pop = pop * 0.82
   local mix = params.mix
   return l + (lowL + noise - l) * mix, r + (lowR + noise - r) * mix

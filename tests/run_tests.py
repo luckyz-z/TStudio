@@ -7,7 +7,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
-from analyze_wav import stats  # noqa: E402
+import numpy as np  # noqa: E402
+from analyze_wav import load, stats  # noqa: E402
 
 DEFAULT_EXE = ROOT / "build-dev" / "TStudio_artefacts" / "Release" / "TStudio.exe"
 
@@ -267,6 +268,24 @@ def test_new_effects(studio):
         studio.render_ok(path, min_rms=-30.0)
 
 
+def test_vinyl_noise_stops_on_silence(studio):
+    for name in ("Tomato Lofi", "Lua Vinyl"):
+        out = studio.work / f"vinyl-{name.replace(' ', '-')}.wav"
+        studio.lua(CLEAR + f"""
+local id = ts.add_channel("Tomato Synth", "Synth")
+ts.add_note(id, 0, ts.STEP, ts.note("C4"), 0.8)
+ts.add_clip(ts.current_pattern(), 0, 0, 4)
+ts.add_effect(0, 0, "{name}")
+ts.set_param({{ track = 0, slot = 0 }}, "{'noise' if name == 'Tomato Lofi' else 'crackle'}", 1.0)
+ts.render([[{out}]])
+""")
+        data, rate = load(str(out))
+        start, end = int(0.1 * rate), int(0.6 * rate)
+        assert np.abs(data[start:end]).max() > 0.001, (name, "no sound while the note plays")
+        tail = data[-rate:]
+        assert np.abs(tail).max() < 1e-4, (name, "noise after the audio stopped", float(np.abs(tail).max()))
+
+
 def test_synth_presets(studio):
     folder = studio.work / "presets"
     folder.mkdir(exist_ok=True)
@@ -365,7 +384,7 @@ def test_vst3_validator(studio):
         assert result.returncode == 0 and " 0 tests failed" in result.stdout, (kind, result.stdout[-2000:])
 
 
-TESTS = [test_lua_api, test_extensions, test_keybindings, test_midi_roundtrip, test_lua_plugins, test_native_plugins, test_mp3_export, test_mixer_routing, test_automation_clips, test_note_slides_and_mutes, test_channel_settings, test_new_effects, test_synth_presets,
+TESTS = [test_lua_api, test_extensions, test_keybindings, test_midi_roundtrip, test_lua_plugins, test_native_plugins, test_mp3_export, test_mixer_routing, test_automation_clips, test_note_slides_and_mutes, test_channel_settings, test_new_effects, test_vinyl_noise_stops_on_silence, test_synth_presets,
          test_editor_snapshots, test_mcp, test_vst3_validator, test_demos_render]
 
 

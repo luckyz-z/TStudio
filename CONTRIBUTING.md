@@ -1,6 +1,8 @@
 # Contributing to TStudio
 
-Thanks for helping. You can contribute in four ways:
+Thanks for helping. Looking for something to build? The [roadmap](ROADMAP.md) lists what's planned, with good first issues marked 🟢.
+
+You can contribute in four ways:
 
 - **Lua plugins, scripts and extensions.** These are the easiest way to add features. Most ideas don't need a C++ change at all. Share them in their own repositories, or open a pull request that adds them to `Plugins/`, `Scripts/` or `Extensions/`.
 - **Native plugins.** See [SDK/README.md](SDK/README.md).

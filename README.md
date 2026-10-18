@@ -13,6 +13,7 @@
   <a href="https://github.com/Luckyz-z/TStudio/releases/latest"><b>Download for Windows</b></a> ·
   <a href="#features">Features</a> ·
   <a href="https://github.com/Luckyz-z/TStudio-Plugins">Plugins</a> ·
+  <a href="ROADMAP.md">Roadmap</a> ·
   <a href="CONTRIBUTING.md">Contribute</a>
 </p>
 
@@ -105,6 +106,7 @@ Plugins that only use these APIs can use any license, commercial and closed-sour
 
 - **Star the repo.** It's the single biggest thing that helps other producers find TStudio.
 - **Report bugs and missing FL features** with the [issue templates](https://github.com/Luckyz-z/TStudio/issues/new/choose).
+- **Build something from the [roadmap](ROADMAP.md).** Linux support, audio clips, a plugin store and more, with good first issues marked.
 - **Send a pull request.** Read [CONTRIBUTING.md](CONTRIBUTING.md) first. CI builds and tests every PR.
 - **Make a plugin** and list it in [TStudio-Plugins](https://github.com/Luckyz-z/TStudio-Plugins).
 - **Post what you made in TStudio** and tag it. Seriously, we want to hear it.

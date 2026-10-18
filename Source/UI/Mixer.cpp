@@ -9,8 +9,8 @@ namespace ts
 {
 namespace
 {
-constexpr int stripWidth = 58;
-constexpr int masterWidth = 72;
+constexpr int stripWidth = 40;
+constexpr int masterWidth = 58;
 constexpr int slotsWidth = 230;
 constexpr int slotHeight = 24;
 constexpr double maxGain = 1.9;
@@ -74,42 +74,61 @@ public:
 
     void resized() override
     {
-        auto area = getLocalBounds().reduced(3, 2);
-        nameArea = area.removeFromTop(34);
+        auto area = getLocalBounds();
+        numberArea = area.removeFromTop(30);
+        area.reduce(2, 2);
+        auto top = area.removeFromTop(92);
+        meterArea = top.removeFromRight(index == 0 ? 20 : 12).reduced(0, 2);
+        nameArea = top;
+        ledArea = area.removeFromTop(18);
         pan.setBounds(area.removeFromTop(30).withSizeKeepingCentre(26, 26));
-        ledArea = area.removeFromTop(16);
-        numberArea = area.removeFromBottom(18);
-        routeArea = area.removeFromBottom(20);
-        meterArea = area.removeFromRight(12).reduced(1, 4);
-        fader.setBounds(area);
+        routeArea = area.removeFromBottom(22);
+        fader.setBounds(area.reduced(0, 4));
     }
 
     void paint(juce::Graphics& g) override
     {
         const auto& track = *studio.project.mixer[size_t(index)];
         const auto isSelected = mixer.selected == index;
-        g.setColour(isSelected ? theme::titleActive : (index == 0 ? theme::title : theme::panel));
-        g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(1.0f), 3.0f);
-        g.setColour(isSelected ? theme::accent : theme::outline);
-        g.drawRoundedRectangle(getLocalBounds().toFloat().reduced(1.0f), 3.0f, 1.0f);
+        const auto body = index == 0 ? theme::mixerStrip.withSaturation(0.05f) : theme::mixerStrip;
+        g.setColour(isSelected ? body.brighter(0.35f) : body);
+        g.fillRect(getLocalBounds());
+        const auto header = index == 0 ? theme::title : theme::mixerHeader;
+        g.setColour(isSelected ? header.brighter(0.3f) : header);
+        g.fillRect(numberArea);
+        g.setColour(juce::Colours::black.withAlpha(0.35f));
+        g.drawVerticalLine(getWidth() - 1, 0.0f, float(getHeight()));
+        g.setColour(juce::Colours::white.withAlpha(0.06f));
+        g.drawVerticalLine(0, 0.0f, float(getHeight()));
 
-        g.setColour(theme::text);
-        g.setFont(theme::font(11.5f, index == 0 ? juce::Font::bold : juce::Font::plain));
-        g.drawFittedText(track.name, nameArea, juce::Justification::centred, 2);
+        g.setColour(theme::text.withAlpha(0.9f));
+        g.setFont(theme::font(12.0f));
+        g.drawText(index == 0 ? juce::String("M") : juce::String(index), numberArea.withTrimmedTop(2).removeFromTop(14), juce::Justification::centred);
+        g.setColour(juce::Colours::white.withAlpha(0.55f));
+        const auto icon = numberArea.withTrimmedTop(17).toFloat().withSizeKeepingCentre(12.0f, 9.0f);
+        g.drawLine(icon.getCentreX(), icon.getY(), icon.getCentreX(), icon.getBottom(), 1.4f);
+        g.drawLine(icon.getX(), icon.getY(), icon.getRight(), icon.getY(), 1.4f);
+        g.drawLine(icon.getX() + 2.0f, icon.getBottom(), icon.getRight() - 2.0f, icon.getBottom(), 1.4f);
 
-        const auto light = ledArea.toFloat().withSizeKeepingCentre(9.0f, 9.0f);
+        {
+            juce::Graphics::ScopedSaveState state(g);
+            g.addTransform(juce::AffineTransform::rotation(-juce::MathConstants<float>::halfPi, nameArea.toFloat().getCentreX(), nameArea.toFloat().getCentreY()));
+            const auto rotated = nameArea.toFloat().withSizeKeepingCentre(float(nameArea.getHeight()), float(nameArea.getWidth()));
+            g.setColour(theme::text.withAlpha(0.85f));
+            g.setFont(theme::font(12.0f, index == 0 ? juce::Font::bold : juce::Font::plain));
+            g.drawText(track.name, rotated.reduced(2.0f, 0.0f), juce::Justification::centredLeft, true);
+        }
+
+        const auto light = ledArea.toFloat().withSizeKeepingCentre(10.0f, 10.0f);
         const auto solo = track.solo.load();
         g.setColour(solo ? theme::accent : (track.muted.load() ? theme::ledOff : theme::led));
         g.fillEllipse(light);
         g.setColour(theme::outline);
         g.drawEllipse(light, 1.0f);
 
-        g.setColour(theme::textDim);
-        g.setFont(theme::font(11.0f, juce::Font::bold));
-        g.drawText(index == 0 ? juce::String("M") : juce::String(index), numberArea, juce::Justification::centred);
         paintRoute(g);
 
-        g.setColour(theme::lcd);
+        g.setColour(juce::Colours::black.withAlpha(0.45f));
         g.fillRect(meterArea);
         const auto meter = [&](juce::Rectangle<int> bar, float level)
         {
@@ -316,7 +335,7 @@ public:
 
     void paint(juce::Graphics& g) override
     {
-        g.fillAll(theme::panelDark);
+        g.fillAll(theme::mixerStrip.darker(0.2f));
         g.setColour(theme::outline);
         g.drawVerticalLine(0, 0.0f, float(getHeight()));
         const auto& track = *studio.project.mixer[size_t(mixer.selected)];
@@ -544,7 +563,7 @@ Mixer::~Mixer()
 
 void Mixer::paint(juce::Graphics& g)
 {
-    g.fillAll(theme::workspace.brighter(0.05f));
+    g.fillAll(theme::mixerBack);
 }
 
 void Mixer::resized()
@@ -558,8 +577,8 @@ void Mixer::resized()
     for (int i = 0; i < strips.size(); ++i)
     {
         const auto width = i == 0 ? masterWidth : stripWidth;
-        strips[i]->setBounds(x, 2, width - 2, height - 4);
-        x += width + (i == 0 ? 6 : 0);
+        strips[i]->setBounds(x, 0, width, height);
+        x += width + (i == 0 ? 8 : 0);
     }
 }
 

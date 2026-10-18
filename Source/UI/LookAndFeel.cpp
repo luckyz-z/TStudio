@@ -51,12 +51,15 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, i
     const auto origin = bipolar ? (startAngle + endAngle) * 0.5f : startAngle;
     const juce::PathStrokeType stroke(ring, juce::PathStrokeType::curved, juce::PathStrokeType::rounded);
 
-    juce::Path track;
-    track.addCentredArc(centre.x, centre.y, arcRadius, arcRadius, 0.0f, startAngle, endAngle, true);
-    g.setColour(theme::lcd);
-    g.strokePath(track, stroke);
+    if (!compact)
+    {
+        juce::Path track;
+        track.addCentredArc(centre.x, centre.y, arcRadius, arcRadius, 0.0f, startAngle, endAngle, true);
+        g.setColour(theme::lcd);
+        g.strokePath(track, stroke);
+    }
 
-    if (std::abs(angle - origin) > 0.01f)
+    if (!compact && std::abs(angle - origin) > 0.01f)
     {
         juce::Path value;
         value.addCentredArc(centre.x, centre.y, arcRadius, arcRadius, 0.0f, juce::jmin(origin, angle), juce::jmax(origin, angle), true);
@@ -69,7 +72,7 @@ void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, i
         g.strokePath(value, stroke);
     }
 
-    const auto bodyRadius = radius - ring - (compact ? 1.0f : radius * 0.07f);
+    const auto bodyRadius = compact ? radius - 1.0f : radius - ring - radius * 0.07f;
     const auto body = juce::Rectangle<float>(bodyRadius * 2.0f, bodyRadius * 2.0f).withCentre(centre);
     if (!compact)
     {
@@ -103,13 +106,18 @@ void LookAndFeel::drawLinearSlider(juce::Graphics& g, int x, int y, int width, i
     const auto track = bounds.withSizeKeepingCentre(4.0f, bounds.getHeight());
     g.setColour(theme::lcd);
     g.fillRoundedRectangle(track, 2.0f);
-    const auto handle = juce::Rectangle<float>(juce::jmin(bounds.getWidth(), 22.0f), 10.0f).withCentre({ bounds.getCentreX(), position });
-    g.setGradientFill(juce::ColourGradient(theme::knobTop.brighter(0.2f), handle.getTopLeft(), theme::knobBottom, handle.getBottomLeft(), false));
-    g.fillRoundedRectangle(handle, 2.0f);
+    const auto handle = juce::Rectangle<float>(juce::jmin(bounds.getWidth(), 20.0f), 16.0f).withCentre({ bounds.getCentreX(), position });
+    g.setColour(juce::Colours::black.withAlpha(0.4f));
+    g.fillRoundedRectangle(handle.translated(0.0f, 1.5f), 2.5f);
+    juce::ColourGradient metal(juce::Colour(0xffd3d9dc), handle.getTopLeft(), juce::Colour(0xff737c80), handle.getBottomLeft(), false);
+    metal.addColour(0.45, juce::Colour(0xffaeb6ba));
+    metal.addColour(0.55, juce::Colour(0xff8c9599));
+    g.setGradientFill(metal);
+    g.fillRoundedRectangle(handle, 2.5f);
     g.setColour(theme::outline);
-    g.drawRoundedRectangle(handle, 2.0f, 1.0f);
-    g.setColour(theme::accent);
-    g.drawHorizontalLine(juce::roundToInt(handle.getCentreY()), handle.getX() + 3.0f, handle.getRight() - 3.0f);
+    g.drawRoundedRectangle(handle, 2.5f, 1.0f);
+    g.setColour(juce::Colour(0xff2b3236));
+    g.drawHorizontalLine(juce::roundToInt(handle.getCentreY()), handle.getX() + 2.0f, handle.getRight() - 2.0f);
 }
 
 void LookAndFeel::drawToggleButton(juce::Graphics& g, juce::ToggleButton& button, bool highlighted, bool)

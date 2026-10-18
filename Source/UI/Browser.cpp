@@ -47,13 +47,16 @@ public:
             g.fillAll(theme::title);
         auto area = juce::Rectangle<int>(0, 0, width, height);
         const auto icon = area.removeFromLeft(18).toFloat().withSizeKeepingCentre(10.0f, 9.0f);
-        g.setColour(kind == Kind::folder ? theme::accent.withAlpha(0.8f) : (kind == Kind::plugin ? theme::led.withAlpha(0.7f) : theme::textDim));
+        g.setColour(kind == Kind::folder ? juce::Colour(0xff958f88) : (kind == Kind::plugin ? theme::led.withAlpha(0.7f) : theme::textDim));
         if (kind == Kind::folder)
-            g.fillRoundedRectangle(icon, 1.5f);
+        {
+            g.fillRoundedRectangle(icon.withWidth(icon.getWidth() * 0.45f).withHeight(3.0f), 1.0f);
+            g.fillRoundedRectangle(icon.withTrimmedTop(2.0f), 1.0f);
+        }
         else if (kind != Kind::info)
             g.fillEllipse(icon.withSizeKeepingCentre(6.0f, 6.0f));
-        g.setColour(kind == Kind::folder ? theme::text : (kind == Kind::info ? theme::textDim : theme::text.withAlpha(0.85f)));
-        g.setFont(theme::font(13.0f, kind == Kind::folder && getParentItem() != nullptr && getParentItem()->getParentItem() == nullptr ? juce::Font::bold : juce::Font::plain));
+        g.setColour(kind == Kind::info ? theme::textDim : theme::text.withAlpha(0.78f));
+        g.setFont(theme::font(13.0f));
         g.drawText(label, area, juce::Justification::centredLeft, true);
     }
 

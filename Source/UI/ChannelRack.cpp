@@ -85,11 +85,11 @@ public:
         else
             paintPreview(g);
 
-        const auto light = selectArea.toFloat().withSizeKeepingCentre(8.0f, 14.0f);
-        g.setColour(selected ? theme::led : theme::ledOff);
-        g.fillRoundedRectangle(light, 2.0f);
-        g.setColour(theme::outline);
-        g.drawRoundedRectangle(light, 2.0f, 1.0f);
+        const auto light = selectArea.toFloat().withSizeKeepingCentre(5.0f, float(getHeight()) - 8.0f);
+        g.setColour(selected ? channel().colour.brighter(0.6f).withSaturation(0.45f) : theme::rackBox.darker(0.35f));
+        g.fillRoundedRectangle(light, 1.5f);
+        g.setColour(theme::outline.withAlpha(0.6f));
+        g.drawRoundedRectangle(light, 1.5f, 1.0f);
     }
 
     void mouseDown(const juce::MouseEvent& e) override
@@ -252,25 +252,28 @@ private:
     void paintInsert(juce::Graphics& g) const
     {
         const auto insert = channel().insert.load();
-        g.setColour(theme::lcd);
-        g.fillRoundedRectangle(insertArea.toFloat(), 2.0f);
-        g.setColour(insert == 0 ? theme::textDim : theme::accent);
-        g.setFont(theme::font(12.0f, juce::Font::bold));
+        g.setColour(theme::rackBox);
+        g.fillRoundedRectangle(insertArea.toFloat(), 3.0f);
+        g.setColour(theme::outline.withAlpha(0.7f));
+        g.drawRoundedRectangle(insertArea.toFloat().reduced(0.5f), 3.0f, 1.0f);
+        g.setColour(insert == 0 ? theme::textDim : theme::text.withAlpha(0.85f));
+        g.setFont(theme::font(14.0f));
         g.drawText(insert == 0 ? juce::String("--") : juce::String(insert), insertArea, juce::Justification::centred);
     }
 
     void paintName(juce::Graphics& g, bool selected) const
     {
-        auto box = nameArea.toFloat();
-        g.setGradientFill(juce::ColourGradient(theme::button.brighter(0.08f), box.getTopLeft(), theme::button.darker(0.1f), box.getBottomLeft(), false));
+        const auto box = nameArea.toFloat();
+        const auto fill = channel().colour.withSaturation(juce::jmin(channel().colour.getSaturation(), 0.42f)).withBrightness(0.5f).interpolatedWith(theme::button, 0.3f);
+        g.setGradientFill(juce::ColourGradient(fill.brighter(0.12f), box.getTopLeft(), fill.darker(0.18f), box.getBottomLeft(), false));
         g.fillRoundedRectangle(box, 3.0f);
-        g.setColour(channel().colour);
-        g.fillRect(box.removeFromLeft(4.0f).reduced(0.0f, 2.0f).translated(2.0f, 0.0f));
-        g.setColour(selected ? theme::accent : theme::outline);
-        g.drawRoundedRectangle(nameArea.toFloat().reduced(0.5f), 3.0f, 1.0f);
+        g.setColour(juce::Colours::white.withAlpha(0.12f));
+        g.drawHorizontalLine(int(box.getY()) + 1, box.getX() + 3.0f, box.getRight() - 3.0f);
+        g.setColour(selected ? theme::text : theme::outline);
+        g.drawRoundedRectangle(box.reduced(0.5f), 3.0f, selected ? 1.4f : 1.0f);
         g.setColour(channel().muted.load() ? theme::textDim : theme::text);
         g.setFont(theme::font(13.0f));
-        g.drawText(channel().name, nameArea.reduced(10, 0), juce::Justification::centredLeft, true);
+        g.drawText(channel().name, nameArea.reduced(8, 0), juce::Justification::centred, true);
     }
 
     void paintStep(juce::Graphics& g, int step) const
@@ -278,10 +281,17 @@ private:
         const auto box = stepBounds(step).toFloat();
         const auto on = isStepOn(step);
         const auto base = on ? theme::stepOn : ((step / 4) % 2 == 0 ? theme::stepA : theme::stepB);
-        g.setGradientFill(juce::ColourGradient(base.brighter(0.1f), box.getTopLeft(), base.darker(0.15f), box.getBottomLeft(), false));
-        g.fillRoundedRectangle(box, 2.0f);
+        g.setColour(theme::outline.withAlpha(0.55f));
+        g.fillRoundedRectangle(box.translated(0.0f, 1.0f), 3.0f);
+        g.setGradientFill(juce::ColourGradient(base.brighter(0.14f), box.getTopLeft(), base.darker(0.12f), box.getBottomLeft(), false));
+        g.fillRoundedRectangle(box, 3.0f);
+        const auto notch = box.withSizeKeepingCentre(box.getWidth() * 0.42f, 2.0f).withY(box.getY() + 4.0f);
+        g.setColour(base.darker(on ? 0.35f : 0.6f));
+        g.fillRect(notch);
+        g.setColour(base.brighter(0.35f).withAlpha(0.5f));
+        g.fillRect(notch.translated(0.0f, 2.0f).withHeight(1.0f));
         g.setColour(step == playhead ? theme::accent : theme::outline);
-        g.drawRoundedRectangle(box.reduced(0.5f), 2.0f, step == playhead ? 1.6f : 1.0f);
+        g.drawRoundedRectangle(box.reduced(0.5f), 3.0f, step == playhead ? 1.6f : 1.0f);
     }
 
     void paintPreview(juce::Graphics& g) const
@@ -454,7 +464,7 @@ int ChannelRack::preferredHeight() const
 
 void ChannelRack::paint(juce::Graphics& g)
 {
-    g.fillAll(theme::panel);
+    g.fillAll(theme::rack);
     auto header = getLocalBounds().removeFromTop(headerHeight).reduced(8, 0);
     header.removeFromLeft(30);
     g.setColour(theme::textDim);

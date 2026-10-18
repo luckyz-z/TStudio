@@ -96,7 +96,7 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel $(nproc)
 
       - name: Test
         run: xvfb-run -a python3 tests/run_tests.py --exe build/TStudio_artefacts/Release/TStudio

@@ -10,6 +10,10 @@
  #pragma comment(lib, "psapi.lib")
  #pragma comment(lib, "shell32.lib")
  #pragma comment(lib, "winmm.lib")
+#elif JUCE_LINUX
+ #include <BinaryData.h>
+ #include <fstream>
+ #include <unistd.h>
 #endif
 
 #include <juce_audio_formats/juce_audio_formats.h>
@@ -60,6 +64,19 @@ const juce::MemoryBlock& startupSound()
     }();
     return wave;
 }
+
+#if JUCE_LINUX
+void runInBackground(const juce::String& shellCommand)
+{
+    static juce::ChildProcess process;
+    process.start(juce::StringArray { "sh", "-c", shellCommand }, 0);
+}
+
+juce::String quoted(const juce::File& file)
+{
+    return "'" + file.getFullPathName().replace("'", "'\\''") + "'";
+}
+#endif
 }
 
 bool startupSoundEnabled()
@@ -77,6 +94,12 @@ void playStartupSound()
 #if JUCE_WINDOWS
     const auto& wave = startupSound();
     PlaySoundW(static_cast<LPCWSTR>(wave.getData()), nullptr, SND_MEMORY | SND_ASYNC | SND_NODEFAULT);
+#elif JUCE_LINUX
+    const auto file = juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("tstudio-chirp.wav");
+    if (file.getSize() != juce::int64(startupSound().getSize()))
+        writeStartupSound(file);
+    const auto path = quoted(file);
+    runInBackground("paplay " + path + " || pw-play " + path + " || aplay -q " + path);
 #endif
 }
 
@@ -86,6 +109,11 @@ int processMemoryMegabytes()
     PROCESS_MEMORY_COUNTERS counters {};
     if (GetProcessMemoryInfo(GetCurrentProcess(), &counters, sizeof(counters)))
         return int(counters.WorkingSetSize / (1024 * 1024));
+#elif JUCE_LINUX
+    std::ifstream statm("/proc/self/statm");
+    long pages = 0, resident = 0;
+    if (statm >> pages >> resident)
+        return int(resident * sysconf(_SC_PAGESIZE) / (1024 * 1024));
 #endif
     return 0;
 }
@@ -122,6 +150,26 @@ void registerFileType()
     juce::WindowsRegistry::setValue(root + "TStudio.Project\\DefaultIcon\\", "\"" + exe + "\",0");
     juce::WindowsRegistry::setValue(root + "TStudio.Project\\shell\\open\\command\\", command);
     SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, nullptr, nullptr);
+#elif JUCE_LINUX
+    const auto exe = juce::File::getSpecialLocation(juce::File::currentExecutableFile);
+    const auto share = juce::File::getSpecialLocation(juce::File::userHomeDirectory).getChildFile(".local/share");
+    const auto desktop = share.getChildFile("applications/tstudio.desktop");
+    const auto entry = juce::StringArray { "[Desktop Entry]", "Type=Application", "Name=TStudio", "Comment=Open-source DAW with the FL Studio workflow",
+                                           "Exec=\"" + exe.getFullPathName() + "\" %f", "Icon=tstudio", "Terminal=false", "Categories=AudioVideo;Audio;Midi;",
+                                           "MimeType=application/x-tstudio-project;", "" }.joinIntoString("\n");
+    if (desktop.loadFileAsString() == entry)
+        return;
+    desktop.getParentDirectory().createDirectory();
+    desktop.replaceWithText(entry);
+    const auto mime = share.getChildFile("mime/packages/tstudio.xml");
+    mime.getParentDirectory().createDirectory();
+    mime.replaceWithText(juce::StringArray { R"(<?xml version="1.0" encoding="UTF-8"?>)", R"(<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">)",
+                                             R"(  <mime-type type="application/x-tstudio-project">)", "    <comment>TStudio project</comment>",
+                                             R"(    <glob pattern="*.tsp"/>)", R"(    <glob pattern="*.lfs"/>)", "  </mime-type>", "</mime-info>", "" }.joinIntoString("\n"));
+    const auto icon = share.getChildFile("icons/hicolor/512x512/apps/tstudio.png");
+    icon.getParentDirectory().createDirectory();
+    icon.replaceWithData(BinaryData::logo_png, size_t(BinaryData::logo_pngSize));
+    runInBackground("update-mime-database " + quoted(share.getChildFile("mime")) + "; update-desktop-database " + quoted(share.getChildFile("applications")) + "; true");
 #endif
 }
 }

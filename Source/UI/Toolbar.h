@@ -10,7 +10,7 @@ class Toolbar final : public juce::Component, private juce::Timer, private juce:
 {
 public:
     static constexpr int rowHeight = 32;
-    static constexpr int menuWidth = 344;
+    int menuWidth = 344;
 
     Toolbar(Studio&, juce::ApplicationCommandManager&);
     ~Toolbar() override;

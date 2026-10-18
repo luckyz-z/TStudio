@@ -27,7 +27,13 @@ LookAndFeel::LookAndFeel()
     setColour(juce::TooltipWindow::backgroundColourId, theme::panelDark);
     setColour(juce::TooltipWindow::textColourId, theme::text);
     setColour(juce::DocumentWindow::textColourId, theme::text);
-    setDefaultSansSerifTypefaceName("Segoe UI");
+    const auto installed = juce::Font::findAllTypefaceNames();
+    for (const auto* name : { "Segoe UI", "Noto Sans", "Ubuntu", "Liberation Sans", "Arial" })
+        if (installed.contains(name))
+        {
+            setDefaultSansSerifTypefaceName(name);
+            break;
+        }
 }
 
 void LookAndFeel::drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float position, float startAngle, float endAngle, juce::Slider& slider)

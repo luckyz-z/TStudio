@@ -75,11 +75,62 @@ jobs:
           name: TStudio-installer
           path: dist-installer/*.exe
 
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake pkg-config libasound2-dev libjack-jackd2-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxcomposite-dev libfreetype-dev libfontconfig1-dev libgl-dev libcurl4-openssl-dev xvfb xauth python3-numpy
+
+      - name: Cache fetched dependencies
+        uses: actions/cache@v6
+        with:
+          path: build/_deps
+          key: deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: xvfb-run -a python3 tests/run_tests.py --exe build/TStudio_artefacts/Release/TStudio
+
+      - name: Package
+        run: |
+          version=dev
+          [ "$GITHUB_REF_TYPE" = tag ] && version=${GITHUB_REF_NAME#v}
+          mkdir -p dist/TStudio
+          cp build/TStudio_artefacts/Release/TStudio dist/TStudio/
+          cp -r build/TStudio_artefacts/Release/Plugins dist/TStudio/
+          cp -r "build/TStudioLuaFX_artefacts/Release/VST3/TStudio Lua FX.vst3" "build/TStudioLuaSynth_artefacts/Release/VST3/TStudio Lua Synth.vst3" dist/TStudio/
+          cp -r SDK LICENSE LICENSE-PLUGIN-EXCEPTION.md README.md dist/TStudio/
+          tar -C dist -czf "TStudio-$version-linux-x64.tar.gz" TStudio
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: TStudio-linux-x64
+          path: TStudio-*-linux-x64.tar.gz
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
       - name: Publish release
-        if: github.ref_type == 'tag'
-        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          Compress-Archive -Path dist/* -DestinationPath "TStudio-$env:GITHUB_REF_NAME-portable.zip"
-          gh release create $env:GITHUB_REF_NAME (Get-Item dist-installer/*.exe).FullName "TStudio-$env:GITHUB_REF_NAME-portable.zip" --title "TStudio $env:GITHUB_REF_NAME" --generate-notes
+          cd artifacts
+          (cd TStudio-windows-x64 && zip -qr "../TStudio-$GITHUB_REF_NAME-windows-portable.zip" .)
+          gh release create "$GITHUB_REF_NAME" TStudio-installer/*.exe "TStudio-$GITHUB_REF_NAME-windows-portable.zip" TStudio-linux-x64/*.tar.gz --title "TStudio $GITHUB_REF_NAME" --generate-notes

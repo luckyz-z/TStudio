@@ -50,14 +50,14 @@ Each `tstudio_param` describes one parameter:
 
 ## Example
 
-[`examples/tomato_native.c`](examples/tomato_native.c) holds two plugins, **Native Crusher** (bit and rate reduction) and **Native Sub** (a sine sub bass with drive). The main CMake build compiles it as `TomatoNative.dll` and copies it next to `TStudio.exe`. To build it on its own:
+[`examples/tomato_native.c`](examples/tomato_native.c) holds two plugins, **Native Crusher** (bit and rate reduction) and **Native Sub** (a sine sub bass with drive). The main CMake build compiles it as `TomatoNative.dll` (`TomatoNative.so` on Linux) and copies it to the `Plugins/` folder next to TStudio. To build it on its own:
 
 ```bash
 cl /LD /O2 /I SDK SDK/examples/tomato_native.c /Fe:TomatoNative.dll
 ```
 
 ```bash
-gcc -shared -O2 -fPIC -ISDK SDK/examples/tomato_native.c -o TomatoNative.dll -lm
+gcc -shared -O2 -fPIC -ISDK SDK/examples/tomato_native.c -o TomatoNative.so -lm
 ```
 
 ## Lua or C?

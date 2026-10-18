@@ -28,7 +28,7 @@ jobs:
           key: deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
 
       - name: Configure
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+        run: cmake -S . -B build -A x64
 
       - name: Build
         run: cmake --build build --config Release --parallel
@@ -39,7 +39,7 @@ jobs:
           git clone --depth 1 https://github.com/steinbergmedia/vst3sdk.git "$RUNNER_TEMP/v3"
           cd "$RUNNER_TEMP/v3"
           git submodule update --init --depth 1 base pluginterfaces public.sdk cmake
-          cmake -S . -B b -G "Visual Studio 17 2022" -A x64 -DSMTG_ENABLE_VSTGUI_SUPPORT=OFF -DSMTG_ENABLE_VST3_PLUGIN_EXAMPLES=OFF -DSMTG_ENABLE_VST3_HOSTING_EXAMPLES=ON
+          cmake -S . -B b -A x64 -DSMTG_ENABLE_VSTGUI_SUPPORT=OFF -DSMTG_ENABLE_VST3_PLUGIN_EXAMPLES=OFF -DSMTG_ENABLE_VST3_HOSTING_EXAMPLES=ON
           cmake --build b --config Release --target validator
 
       - name: Test

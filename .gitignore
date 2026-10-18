@@ -1,0 +1,11 @@
+build/
+out/
+.vs/
+*.user
+Renders/
+build-dev/
+tstudio-*.txt
+*.wav.error.txt
+__pycache__/
+dist/
+TStudio-Plugins/

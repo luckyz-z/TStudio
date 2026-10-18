@@ -1,0 +1,37 @@
+name: Feature request
+description: Missing an FL Studio feature or have an idea? Ask here.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What do you want to do?
+      description: Describe the workflow, not just the button. "I want to stretch a sample to the tempo without retuning it" beats "add a stretch knob".
+    validations:
+      required: true
+  - type: textarea
+    id: fl
+    attributes:
+      label: How does FL Studio (or another DAW) do it?
+      description: Shortcuts, menu paths and screenshots are all useful. TStudio aims to match FL behaviour wherever it can.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Channel rack
+        - Piano roll
+        - Playlist
+        - Mixer
+        - Instruments and effects
+        - Lua scripting and plugins
+        - Native plugin SDK
+        - MCP / AI control
+        - Installer and updates
+        - Other
+  - type: checkboxes
+    id: lua
+    attributes:
+      label: Could it be a plugin instead?
+      options:
+        - label: I checked whether this could be a Lua script, extension or plugin rather than a core change.

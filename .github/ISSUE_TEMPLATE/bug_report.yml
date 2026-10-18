@@ -1,0 +1,45 @@
+name: Bug report
+description: Something crashed, sounds wrong, or doesn't behave like it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open the Straw Hat Bounce demo
+        2. Press F9 and drag the master fader
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: TStudio version
+      description: Help > About, or the installer file name.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Windows version and audio device
+      placeholder: Windows 11 24H2, Focusrite Scarlett 2i2 (ASIO)
+  - type: textarea
+    id: crash
+    attributes:
+      label: Crash log
+      description: If TStudio crashed, paste Documents/TStudio/crash.log here.
+      render: text
+  - type: textarea
+    id: files
+    attributes:
+      label: Project file or screenshots
+      description: Drag a .tsp project or screenshots in here. They help a lot.

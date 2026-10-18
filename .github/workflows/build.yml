@@ -1,0 +1,85 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache fetched dependencies
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: deps-${{ runner.os }}-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Build Steinberg VST3 validator
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/steinbergmedia/vst3sdk.git "$RUNNER_TEMP/v3"
+          cd "$RUNNER_TEMP/v3"
+          git submodule update --init --depth 1 base pluginterfaces public.sdk cmake
+          cmake -S . -B b -G "Visual Studio 17 2022" -A x64 -DSMTG_ENABLE_VSTGUI_SUPPORT=OFF -DSMTG_ENABLE_VST3_PLUGIN_EXAMPLES=OFF -DSMTG_ENABLE_VST3_HOSTING_EXAMPLES=ON
+          cmake --build b --config Release --target validator
+
+      - name: Test
+        shell: bash
+        run: |
+          python -m pip install numpy
+          python tests/run_tests.py --exe build/TStudio_artefacts/Release/TStudio.exe --vst3-validator "$RUNNER_TEMP/v3/b/bin/Release/validator.exe"
+
+      - name: Package
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item build/TStudio_artefacts/Release/TStudio.exe dist/
+          Copy-Item -Recurse build/TStudio_artefacts/Release/Plugins dist/Plugins
+          Copy-Item -Recurse "build/TStudioLuaFX_artefacts/Release/VST3/TStudio Lua FX.vst3" dist/
+          Copy-Item -Recurse "build/TStudioLuaSynth_artefacts/Release/VST3/TStudio Lua Synth.vst3" dist/
+          Copy-Item -Recurse SDK dist/SDK
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          $version = if ($env:GITHUB_REF_TYPE -eq "tag") { $env:GITHUB_REF_NAME.TrimStart("v") } else { "0.0.0-dev" }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$version" "/O${env:GITHUB_WORKSPACE}/dist-installer" installer/TStudio.iss
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TStudio-windows-x64
+          path: dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TStudio-installer
+          path: dist-installer/*.exe
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Compress-Archive -Path dist/* -DestinationPath "TStudio-$env:GITHUB_REF_NAME-portable.zip"
+          gh release create $env:GITHUB_REF_NAME (Get-Item dist-installer/*.exe).FullName "TStudio-$env:GITHUB_REF_NAME-portable.zip" --title "TStudio $env:GITHUB_REF_NAME" --generate-notes

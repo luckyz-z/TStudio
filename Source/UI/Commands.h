@@ -1,0 +1,58 @@
+#pragma once
+
+#include <juce_gui_basics/juce_gui_basics.h>
+
+namespace ts::command
+{
+enum : juce::CommandID
+{
+    newProject = 0x2000,
+    open,
+    save,
+    saveAs,
+    importFlp,
+    exportWave,
+    undo,
+    redo,
+    play,
+    stop,
+    record,
+    songMode,
+    newPattern,
+    clonePattern,
+    renamePattern,
+    deletePattern,
+    nextPattern,
+    previousPattern,
+    showPlaylist,
+    showChannelRack,
+    showPianoRoll,
+    showMixer,
+    showBrowser,
+    metronome,
+    typingKeyboard,
+    audioSettings,
+    managePlugins,
+    startupDemo,
+    scriptConsole,
+    openScriptsFolder,
+    mcpServer,
+    saveNewVersion,
+    exportMidi,
+    exportMp3,
+    panic,
+    pause,
+    rewind,
+    nextBar,
+    previousBar,
+    emptyPattern,
+    closeAllWindows,
+    arrangeWindows,
+    togglePlaylistSize,
+    startupSound,
+    starOnGitHub,
+    reportBug,
+    pluginDirectory,
+    about,
+};
+}

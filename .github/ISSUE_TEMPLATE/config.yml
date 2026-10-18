@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Share or find a plugin
+    url: https://github.com/Luckyz-z/TStudio-Plugins
+    about: Free and paid Lua plugins, extensions and native plugins are listed in the TStudio-Plugins repository.
+  - name: Questions and show-and-tell
+    url: https://github.com/Luckyz-z/TStudio/discussions
+    about: Ask how to do something, share beats made in TStudio, or talk about ideas.
+  - name: Security issue
+    url: https://github.com/Luckyz-z/TStudio/security/advisories/new
+    about: Please report security problems privately.

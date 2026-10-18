@@ -20,7 +20,32 @@ FetchContent_Declare(lame
     SOURCE_SUBDIR none)
 FetchContent_MakeAvailable(lame)
 file(GLOB LAME_SOURCES ${lame_SOURCE_DIR}/libmp3lame/*.c ${lame_SOURCE_DIR}/libmp3lame/vector/*.c)
-configure_file(${lame_SOURCE_DIR}/configMS.h ${CMAKE_CURRENT_BINARY_DIR}/lame-config/config.h COPYONLY)
+if(MSVC)
+    configure_file(${lame_SOURCE_DIR}/configMS.h ${CMAKE_CURRENT_BINARY_DIR}/lame-config/config.h COPYONLY)
+else()
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/lame-config/config.h [=[
+#pragma once
+#include <stdint.h>
+#define STDC_HEADERS 1
+#define HAVE_STDINT_H 1
+#define HAVE_INTTYPES_H 1
+#define HAVE_ERRNO_H 1
+#define HAVE_FCNTL_H 1
+#define HAVE_LIMITS_H 1
+#define HAVE_STRING_H 1
+#define HAVE_STDLIB_H 1
+#define HAVE_UNISTD_H 1
+#define HAVE_STRCHR 1
+#define HAVE_MEMCPY 1
+#define PROTOTYPES 1
+#define USE_FAST_LOG 1
+#define PACKAGE "lame"
+#define LAME_LIBRARY_BUILD
+typedef long double ieee854_float80_t;
+typedef double ieee754_float64_t;
+typedef float ieee754_float32_t;
+]=])
+endif()
 add_library(mp3lame STATIC ${LAME_SOURCES})
 target_include_directories(mp3lame PUBLIC ${lame_SOURCE_DIR}/include PRIVATE ${lame_SOURCE_DIR}/libmp3lame ${CMAKE_CURRENT_BINARY_DIR}/lame-config)
 target_compile_definitions(mp3lame PRIVATE HAVE_CONFIG_H TAKEHIRO_IEEE754_HACK _CRT_SECURE_NO_WARNINGS)
@@ -33,7 +58,10 @@ file(GLOB LUA_SOURCES ${lua_SOURCE_DIR}/*.c)
 list(REMOVE_ITEM LUA_SOURCES ${lua_SOURCE_DIR}/lua.c ${lua_SOURCE_DIR}/luac.c ${lua_SOURCE_DIR}/onelua.c ${lua_SOURCE_DIR}/ltests.c)
 add_library(lua STATIC ${LUA_SOURCES})
 target_include_directories(lua PUBLIC ${lua_SOURCE_DIR})
-set_target_properties(lua PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(lua PROPERTIES LINKER_LANGUAGE C POSITION_INDEPENDENT_CODE ON)
+if(UNIX)
+    target_compile_definitions(lua PRIVATE LUA_USE_POSIX)
+endif()
 
 juce_add_gui_app(TStudio
     PRODUCT_NAME "TStudio"
@@ -99,6 +127,9 @@ option(TSTUDIO_BUILD_NATIVE_EXAMPLE "Build the example native (C API) plugin lib
 if(TSTUDIO_BUILD_NATIVE_EXAMPLE)
     add_library(TomatoNative SHARED SDK/examples/tomato_native.c)
     set_target_properties(TomatoNative PROPERTIES PREFIX "" C_VISIBILITY_PRESET hidden)
+    if(NOT WIN32)
+        target_link_libraries(TomatoNative PRIVATE m)
+    endif()
     add_custom_command(TARGET TomatoNative POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:TStudio>/Plugins"
         COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:TomatoNative>" "$<TARGET_FILE_DIR:TStudio>/Plugins/")

@@ -25,13 +25,13 @@ The goals: run on Linux, and cover the FL features people miss most.
 
 TStudio is built on JUCE, which already runs on Linux, and the Windows-only code is gathered in one file. This is the most wanted port, and it can be done in steps:
 
-- [ ] **Build on Linux** 🟡. Use LAME's autotools `config.h` instead of `configMS.h` in `CMakeLists.txt`, keep the MSVC flags behind `if(MSVC)`, and list the apt packages JUCE needs (ALSA, JACK, X11, FreeType, libcurl) in the README. ([#5](https://github.com/luckyz-z/TStudio/issues/5))
-- [ ] **Port `Source/UI/NativeWindow.cpp`** 🟡. Play the startup chirp through JUCE audio instead of `PlaySoundW`. Read memory use from `/proc/self/status`. Register `.tsp` files with a `.desktop` file and a shared-mime-info XML. ([#6](https://github.com/luckyz-z/TStudio/issues/6))
-- [ ] **Linux CI job** 🟢. Add an `ubuntu-latest` job to `.github/workflows/build.yml` that builds and runs `tests/run_tests.py` under `xvfb-run`. ([#7](https://github.com/luckyz-z/TStudio/issues/7))
-- [ ] **Packages** 🟡. Ship an AppImage from CI first, then a Flatpak on Flathub. ([#8](https://github.com/luckyz-z/TStudio/issues/8))
+- [x] **Build on Linux** 🟡. Use LAME's autotools `config.h` instead of `configMS.h` in `CMakeLists.txt`, keep the MSVC flags behind `if(MSVC)`, and list the apt packages JUCE needs (ALSA, JACK, X11, FreeType, libcurl) in the README. ([#5](https://github.com/luckyz-z/TStudio/issues/5))
+- [x] **Port `Source/UI/NativeWindow.cpp`** 🟡. Play the startup chirp through JUCE audio instead of `PlaySoundW`. Read memory use from `/proc/self/status`. Register `.tsp` files with a `.desktop` file and a shared-mime-info XML. ([#6](https://github.com/luckyz-z/TStudio/issues/6))
+- [x] **Linux CI job** 🟢. Add an `ubuntu-latest` job to `.github/workflows/build.yml` that builds and runs `tests/run_tests.py` under `xvfb-run`. ([#7](https://github.com/luckyz-z/TStudio/issues/7))
+- [ ] **Packages** 🟡. CI already ships a `.tar.gz`. Next: an AppImage, then a Flatpak on Flathub. ([#8](https://github.com/luckyz-z/TStudio/issues/8))
 - [ ] **JACK and PipeWire** 🟡. Test low-latency setups and document them. ([#9](https://github.com/luckyz-z/TStudio/issues/9))
 - [ ] **LV2 hosting** 🟡. JUCE can host LV2 on Linux. Turn it on and add it to the plugin manager. ([#10](https://github.com/luckyz-z/TStudio/issues/10))
-- [ ] **Native plugins as `.so`** 🟢. The loader already looks for `.so`. Add a Linux build line to `SDK/README.md` and test it. ([#11](https://github.com/luckyz-z/TStudio/issues/11))
+- [x] **Native plugins as `.so`** 🟢. The loader already looks for `.so`. Add a Linux build line to `SDK/README.md` and test it. ([#11](https://github.com/luckyz-z/TStudio/issues/11))
 
 ### 🎧 Audio clips and recording 🔴
 
@@ -112,5 +112,6 @@ Today TStudio records notes, not audio. These are the biggest gaps compared to F
 - [x] Lua loader VST3s for other DAWs, native C plugin SDK
 - [x] MCP server for AI assistants
 - [x] Windows installer and automatic GitHub releases
+- [x] Linux builds, tests and release tarballs
 
 Have an idea that isn't here? Open a [feature request](https://github.com/Luckyz-z/TStudio/issues/new/choose) or start a thread in [Discussions](https://github.com/Luckyz-z/TStudio/discussions).

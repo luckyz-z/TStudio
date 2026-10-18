@@ -10,7 +10,7 @@
 <h3 align="center">Channel rack. Piano roll. Playlist. Mixer. The shortcuts you already know.<br>Free forever, open source, and hackable down to the last knob.</h3>
 
 <p align="center">
-  <a href="https://github.com/Luckyz-z/TStudio/releases/latest"><b>Download for Windows</b></a> ·
+  <a href="https://github.com/Luckyz-z/TStudio/releases/latest"><b>Download for Windows and Linux</b></a> ·
   <a href="#features">Features</a> ·
   <a href="https://github.com/Luckyz-z/TStudio-Plugins">Plugins</a> ·
   <a href="ROADMAP.md">Roadmap</a> ·
@@ -33,7 +33,9 @@ TStudio is an independent project. It is not affiliated with Image-Line and ship
 
 ## Get started
 
-1. Download `TStudio-x.y.z-Setup.exe` from [Releases](https://github.com/Luckyz-z/TStudio/releases/latest) and run it.
+1. Download TStudio from [Releases](https://github.com/Luckyz-z/TStudio/releases/latest).
+   - **Windows:** run `TStudio-x.y.z-Setup.exe`.
+   - **Linux:** extract `TStudio-x.y.z-linux-x64.tar.gz` and run `TStudio/TStudio`.
 2. TStudio opens with a demo project. Hit **Space**.
 3. Browse **Demo projects** in the browser (Alt+F8) and take one apart, or pick **File > New** and start from scratch.
 
@@ -111,19 +113,43 @@ Plugins that only use these APIs can use any license, commercial and closed-sour
 - **Make a plugin** and list it in [TStudio-Plugins](https://github.com/Luckyz-z/TStudio-Plugins).
 - **Post what you made in TStudio** and tag it. Seriously, we want to hear it.
 
-## Build (Windows)
+## Build
 
-You need Visual Studio 2022 (Desktop C++ workload), CMake 3.25+ and Git. JUCE 8.0.4 and Lua 5.4.7 are fetched automatically.
+JUCE 8.0.4, Lua 5.4.7 and LAME 3.100 are fetched automatically.
+
+### Windows
+
+You need Visual Studio 2022 or later (Desktop C++ workload), CMake 3.25+ and Git.
 
 ```bash
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake -S . -B build -A x64
 ```
 
 ```bash
 cmake --build build --config Release --parallel
 ```
 
-The build produces:
+### Linux
+
+Tested on Ubuntu 24.04 and 26.04. Install the compiler and JUCE's dependencies:
+
+```bash
+sudo apt install build-essential cmake git pkg-config libasound2-dev libjack-jackd2-dev libx11-dev libxext-dev libxrandr-dev libxinerama-dev libxcursor-dev libxcomposite-dev libfreetype-dev libfontconfig1-dev libgl-dev libcurl4-openssl-dev
+```
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+```
+
+```bash
+cmake --build build --parallel
+```
+
+Outputs have the same paths without the `.exe` and `.dll` extensions: `build/TStudio_artefacts/Release/TStudio` and `Plugins/TomatoNative.so`. On first launch TStudio adds a desktop entry, an icon and the `.tsp` file type under `~/.local/share`.
+
+### Outputs
+
+The Windows build produces:
 
 | Output | What it is |
 | --- | --- |
@@ -131,7 +157,7 @@ The build produces:
 | `build/TStudio_artefacts/Release/Plugins/TomatoNative.dll` | The example native plugin (Native Crusher and Native Sub). |
 | `build/TStudioLua{FX,Synth}_artefacts/Release/VST3/` | The Lua loader VST3s for other DAWs. |
 
-To build the installer, install [Inno Setup 6](https://jrsoftware.org/isinfo.php) and compile `installer/TStudio.iss`. It writes `dist/TStudio-0.1.0-Setup.exe`. `python tools/make_installer_art.py` regenerates the installer art and the README banner. Pushing a `v*` tag makes CI build, test and publish a GitHub release with the installer and a portable zip.
+To build the installer, install [Inno Setup 6](https://jrsoftware.org/isinfo.php) and compile `installer/TStudio.iss`. It writes `dist/TStudio-0.1.0-Setup.exe`. `python tools/make_installer_art.py` regenerates the installer art and the README banner. Pushing a `v*` tag makes CI build and test on Windows and Linux, then publish a GitHub release with the installer, a portable zip and a Linux tarball.
 
 Build options:
 
@@ -150,7 +176,9 @@ python -m pip install numpy
 python tests/run_tests.py --exe build/TStudio_artefacts/Release/TStudio.exe
 ```
 
-`ctest -C Release` runs the same suite. CI runs it on every push (`.github/workflows/build.yml`).
+On Linux without a display, wrap it in `xvfb-run -a`.
+
+`ctest -C Release` runs the same suite. CI runs it on Windows and Linux for every push and pull request (`.github/workflows/build.yml`).
 
 ## Command line
 

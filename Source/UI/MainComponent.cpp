@@ -122,8 +122,12 @@ void MainComponent::paint(juce::Graphics& g)
 void MainComponent::resized()
 {
     auto area = getLocalBounds();
+    const auto names = getMenuBarNames();
+    toolbar.menuWidth = 8;
+    for (int i = 0; i < names.size(); ++i)
+        toolbar.menuWidth += lookAndFeel.getMenuBarItemWidth(menuBar, i, names[i]);
     toolbar.setBounds(area.removeFromTop(toolbarHeight));
-    menuBar.setBounds(0, 4, Toolbar::menuWidth, Toolbar::rowHeight - 8);
+    menuBar.setBounds(0, 4, toolbar.menuWidth, Toolbar::rowHeight - 8);
     menuBar.toFront(false);
     browser.setVisible(browserVisible);
     if (browserVisible)

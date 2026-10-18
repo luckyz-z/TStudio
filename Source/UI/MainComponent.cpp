@@ -293,7 +293,7 @@ void MainComponent::getCommandInfo(juce::CommandID id, juce::ApplicationCommandI
         case command::typingKeyboard: info.setInfo("Typing keyboard to piano", "Play the selected channel with the computer keyboard", "Options", 0); info.setTicked(typingKeyboard); info.addDefaultKeypress('t', ctrl); break;
         case command::audioSettings: info.setInfo("Audio settings...", "Choose audio and MIDI devices", "Options", 0); info.addDefaultKeypress(KeyPress::F10Key, 0); break;
         case command::managePlugins: info.setInfo("Manage plugins...", "Scan for VST3 plugins", "Options", 0); break;
-        case command::startupDemo: info.setInfo("Play demo on startup", "Open and play a demo project when TStudio starts", "Options", 0); info.setTicked(studio.plugins.settings().getBoolValue("playStartupDemo", true)); break;
+        case command::startupDemo: info.setInfo("Open demo on startup", "Open a demo project when TStudio starts", "Options", 0); info.setTicked(studio.plugins.settings().getBoolValue("playStartupDemo", true)); break;
         case command::scriptConsole: info.setInfo("Script console...", "Write and run Lua scripts", "Tools", 0); info.addDefaultKeypress('l', ctrl | ModifierKeys::shiftModifier); break;
         case command::openScriptsFolder: info.setInfo("Open scripts folder", "Show your Lua scripts folder", "Tools", 0); break;
         case command::mcpServer:
@@ -724,7 +724,6 @@ void MainComponent::playStartupDemo()
     openDemo("Straw Hat Bounce");
     studio.project.dirty = false;
     studio.engine.setSongPosition(0.0);
-    studio.engine.setPlaying(true);
     updateTitle();
 }
 

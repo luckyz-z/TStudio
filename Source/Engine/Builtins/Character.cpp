@@ -461,6 +461,7 @@ public:
         held.fill(0.0f);
         filtered.fill(0.0f);
         crackle = 0.0f;
+        quiet = std::numeric_limits<int>::max() / 2;
         counter = 0;
     }
 
@@ -472,11 +473,15 @@ public:
         const auto depth = wow.get() * 0.0025 * rate;
         const auto toneCoefficient = 1.0f - std::exp(-juce::MathConstants<float>::twoPi * tone.get() / float(rate));
         const auto vinyl = noise.get();
+        const auto tail = int(rate), fade = int(rate * 0.5);
 
         for (int i = 0; i < buffer.getNumSamples(); ++i)
         {
             wowPhase = std::fmod(wowPhase + 0.55 / rate, 1.0);
             flutterPhase = std::fmod(flutterPhase + 6.3 / rate, 1.0);
+            const auto input = juce::jmax(std::abs(buffer.getSample(0, i)), std::abs(buffer.getSample(1, i)));
+            quiet = input > 0.0003f ? 0 : juce::jmin(quiet + 1, tail + fade);
+            const auto presence = 1.0f - float(juce::jmax(0, quiet - tail)) / float(fade);
             const auto delay = 2.0 + depth * (1.0 + std::sin(twoPi * wowPhase)) + depth * 0.15 * std::sin(twoPi * flutterPhase);
             if (random.nextFloat() < vinyl * 0.0006f)
                 crackle = (random.nextFloat() * 2.0f - 1.0f) * vinyl * 0.35f;
@@ -499,7 +504,7 @@ public:
                     held[size_t(c)] = std::round(x * levels) / levels;
                 x = held[size_t(c)];
                 filtered[size_t(c)] += (x - filtered[size_t(c)]) * toneCoefficient;
-                data[i] = filtered[size_t(c)] + crackle + hiss;
+                data[i] = filtered[size_t(c)] + (crackle + hiss) * presence;
             }
             write = (write + 1) % size;
         }
@@ -522,7 +527,7 @@ private:
     std::array<float, 2> held {}, filtered {};
     double rate = 44100.0, wowPhase = 0.0, flutterPhase = 0.0;
     float crackle = 0.0f;
-    int write = 0;
+    int write = 0, quiet = std::numeric_limits<int>::max() / 2;
     juce::int64 counter = 0;
 };
 
